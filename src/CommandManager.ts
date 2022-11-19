@@ -149,16 +149,16 @@ export class CommandManager<
         if (!param.option) {
           if (!param.required) {
             if (hadOptional) {
-              throw new Error(`Can only have 1 optional parameter to avoid ambiguity`);
+              throw new Error(`Solo se puede utilizar una opción opcional`);
             }
 
             hadOptional = true;
           } else if (hadOptional) {
-            throw new Error(`Optional parameter must come last`);
+            throw new Error(`Las opciones opcionales deben ir al final`);
           }
 
           if (hadRest) {
-            throw new Error(`Rest parameter must come last`);
+            throw new Error(`El parámetro rest debe ser el último`);
           }
 
           if (param.rest) {
@@ -166,7 +166,7 @@ export class CommandManager<
           }
 
           if (hadCatchAll) {
-            throw new Error(`Catch-all parameter must come last`);
+            throw new Error(`El parámetro catch-all debe ser el último`);
           }
 
           if (param.catchAll) {
@@ -376,21 +376,21 @@ export class CommandManager<
             const [optName, opt] =
               options.find(([name, opt]) => name === matchedOptName || opt.shortcut === matchedOptName) ?? [];
             if (!optName || !opt) {
-              return { error: `Unknown option: ${matchingOptionPrefix}${matchedOptName}` };
+              return { error: `Opción inválida: ${matchingOptionPrefix}${matchedOptName}` };
             }
 
             let optValue: string | boolean = optMatch[2];
 
             if (opt.isSwitch) {
               if (optValue) {
-                return { error: `Switch options can't have values: ${matchingOptionPrefix}${optName}` };
+                return { error: `Las opciones de cambio no pueden tener valores: ${matchingOptionPrefix}${optName}` };
               }
               optValue = true;
             } else if (optValue == null) {
               // If we're not a flag, and we don't have a =value, consume the next argument as the value instead
               const nextArg = parsedArguments[i + 1];
               if (!nextArg) {
-                return { error: `No value for option: ${matchingOptionPrefix}${optName}` };
+                return { error: `No hay un valor para la opción: ${matchingOptionPrefix}${optName}` };
               }
 
               optValue = nextArg.value;
@@ -412,13 +412,13 @@ export class CommandManager<
       // Argument wasn't an option, so match it to a parameter instead
       const [paramName, param] = parameters[paramIndex] || [];
       if (!param) {
-        return { error: `Too many arguments, expected ${parameters.length}` };
+        return { error: `Demasiados argumentos, se esperaba(n) ${parameters.length}` };
       }
 
       if (param.rest) {
         const restArgs = parsedArguments.slice(i);
         if (param.required && restArgs.length === 0) {
-          return { error: `Missing required argument: ${paramName}` };
+          return { error: `Falta un argumento requerido: ${paramName}` };
         }
 
         result[paramName] = {
@@ -461,7 +461,7 @@ export class CommandManager<
     for (const [paramName, param] of parameters) {
       if (result[paramName] != null) continue;
       if (param.required) {
-        return { error: `Missing required argument: ${paramName}` };
+        return { error: `Falta un argumento requerido: ${paramName}` };
       }
       if (param.def) {
         result[paramName] = {
@@ -489,7 +489,7 @@ export class CommandManager<
           }
         } catch (e) {
           if (e instanceof TypeConversionError) {
-            return { error: `Invalid value for argument '${name}': ${e.message}` };
+            return { error: `Valor de argumento '${name}' inválido: ${e.message}` };
           }
 
           throw e;
@@ -502,7 +502,7 @@ export class CommandManager<
             opt.value = await opt.option.type(opt.value, context);
           } catch (e) {
             if (e instanceof TypeConversionError) {
-              return { error: `Invalid value for option '${name}': ${e.message}` };
+              return { error: `Valor de opción '${name}' inválido: ${e.message}` };
             }
 
             throw e;
